@@ -1,0 +1,31 @@
+\begin{center}
+    Disclaimer
+\end{center}
+
+\noindent
+I do not guarantee this summary to contain every part of the lecture, as it is only supposed to summarize the things I personally found the most important when going through the slides.
+
+\begin{center}
+    This document was compiled on \today.
+\end{center}
+
+\newpage
+
+\epigraph{Don't dance faster than the music!}{}
+\section*{Introduction}
+The Embedded Real-Time Systems lecture of Kiel University by Reinhard von Hanxleden is based on \emph{Introduction to Embedded Systems---A Cyber-Physical Systems Approach} by Edward Lee and Sanjit Seshia\footnote{\url{https://ptolemy.berkeley.edu/books/leeseshia/releases/LeeSeshia_DigitalV2_3.pdf}}.
+Embedded systems are computers whose main purpose is the interaction with a physical process.
+This interaction is commonly implemented using sensors, actuators, and physical dynamics.
+A real-time system is broadly defined by the notion, that not only the correctness of the output of a machine matters, but also the timing in which they arrive.
+
+In this book and lecture it is postulated, that embedded systems should be created using an iterative process, which is called \emph{Modeling, Design, Analysis}.
+\begin{description}
+    \item[Modeling] The process of gaining a deeper understanding of a system through environmental imitation.
+        Models specify \emph{what} a system does.
+    \item[Design] The structured creation of artifacts.
+        Designs specify \emph{how} a system does what it does.
+    \item[Analysis] The process of gaining a deeper understanding of a system through dissection.
+        Analysis specifies \emph{why} a system does what it does, or fails to do so.
+\end{description}
+This approach has the important benefit, that we can implement mechanisms to compile embedded systems software based on a mathematical model of the system and environment.
+The compiler can perform a model analysis during translation.
