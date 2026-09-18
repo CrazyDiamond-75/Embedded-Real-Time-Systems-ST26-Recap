@@ -136,7 +136,7 @@ They can be used for designing requirements and analysing the safety of the syst
 
 Currently we do not have defined, \emph{when} a reaction occurs, i.e., when to read the next input values for the signals.
 This is vitally important, as we can define ESMs with a default self transition, which increases the value of a variable---the value becomes dependent on the \emph{rate} of reactions, which is currently undefined.
-We will go over this notion of time in \autoref{sec:?}.
+We will go over this notion of time in \cref{sec:?}.
 
 \newcommand{\true}{\texttt{true}}
 
@@ -209,3 +209,100 @@ For the following definitions, we will look at compositions between two SM actor
     To construct the composition machine, first form the state space as the cross product of the state spaces of \(A\) and \(B\), and then determine which transitions are taken under what conditions.
     It is important to remember that the transitions are simultaneous, even when one logically causes the other.
 \end{definition}
+
+The last possible composition between two actors is the feedback composition.
+To define the semantics of such a composition, the question again begs which actor should react \emph{first}.
+Tackling this requires defining another model of computation, the \emph{synchronous-reactive} model of computation.
+
+The semantics of a feedback composition should be similar to the cascade composition in the way, that they are simultaneous and instantaneous.
+The difference being, that the composed actor does not oscillate in propagating data from one end to the other, but computes a solution instantaneous, where output matches input.
+Thus, in a feedback composition of two actors, they react at the same time.
+
+By reorganizing any composition of actors, it can be shown that there is an equal simple feedback composition.
+
+\begin{definition}[Feedback Composition]
+    Realizing a feedback composition between \(A\) and \(B\) needs \(o_A \subseteq i_B \wedge o_B \subseteq i_A\).
+    As mentioned, any composition can also be rewritten as a feedback composition using one actor, thus we only need to consider \(o_C \subseteq i_C\) if \(C\) is the refined feedback composition of \(A\) and \(B\), which is equivalent to the statement prior\footnote{It has to be noted, that for this case, there are two different versions of \(C\), when composing it, such that there is a connection between \(A\) and \(B\) inside the composed actor. The inner signal can also be mapped externally and vice versa. For this example we consider a version where \(A\) and \(B\) are not connected in the body of \(C\) but using a signal which is the two signals concatenated.}.
+
+    The goal is finding the \emph{fixed point} signal \(s : \N \rightarrow o_C \cup \{\abst\}\) which flows from the output of \(C\) to its input.
+    \(s\) must hold \cref{eq:1} to be a fixed point, where \(\textsf C : (\N \rightarrow i_C \cup \{\abst\}) \rightarrow (\N \rightarrow o_C \cup \{\abst\})\) is the actor function of \(C\).
+
+    \begin{IEEEeqnarray}{c} \label{eq:1}
+        \textsf C(s) = s
+    \end{IEEEeqnarray}
+
+    To find \(s\), we consider the \emph{firing function} \(f_C : \N \rightarrow (i_C \cup \{\abst\} \rightarrow o_C \cup \{\abst\})\) of \(C\) which is a recomposed version of the actor function to determine the signal at reaction \(n \in \N\).
+    This transforms \cref{eq:1} into \cref{eq:2}, which is also called a fixed point.
+
+    \begin{IEEEeqnarray}{c} \label{eq:2}
+        \forall n \in \N : s(n) = (f_C(n))(s(n))
+    \end{IEEEeqnarray}
+\end{definition}
+
+To find fixed points in arbitrary feedback compositions, we can deduce the simple feedback composition, as mentioned.
+Many simplified feedback compositions can shown to be \emph{well-formed} which implies the existence of an unique fixed-point.
+In this case, we can construct a resulting actor based on the fixed point \(s\).
+
+\begin{definition}[Well-formedness]
+    When finding a fixed point with \cref{eq:2}, there may be two problems.
+    The fixed point may not exist, or it is not unique.
+    In either case, the system is called \emph{ill-formed}---the feedback composition is unstable.
+    If this is not the case, the system is called \emph{well-formed}.
+\end{definition}
+
+As well-formedness is not equivalent to the existence of a fixed point, there are ill-formed compositions.
+This is the case when the system has multiple fixed points.
+Nevertheless, it is possible to find unique fixed points for many actors using an algorithm to test for \emph{constructiveness}.
+
+\begin{algorithm}[Determining Constructiveness] \label{alg:1} \hfill
+    \begin{enumerate}
+        \item Start with \(s(n)\) unknown.
+        \item Determine \((f_C(n))(s(n))\) by looking at transitions, starting from the initial state and looking if there exists a value which is output by all transitions.
+            This is needed, as the input at time \(n\) is unknown.
+        \item Repeat 2. until all values in \(s(n)\) become known or no more progress can be made.
+        \item If unknown values remain, the model is not constructiveness, else it is.
+    \end{enumerate}
+\end{algorithm}
+
+It is vitally important to remember \textbf{not} to search for a fixed point by matching all inputs and outputs for all transitions, as while this is a correct approach, for arbitrary state machine actors with big \(o_C\) this can take too much time, as this is an exhaustive search---which may be impossible if \(o_C\) has infinite types.
+To demonstrate this, look at Figure 6.6 in LeeShia\footnote{\url{https://ptolemy.berkeley.edu/books/leeseshia/releases/LeeSeshia_DigitalV2_3.pdf\#figure.6.6}}.
+When applying \cref{alg:1} to this example, it does not find a fixed point in state \textsf{s1}, as \(1 \ne \abst\).
+There is the fixed point \(\abst\) though, which is derived from the transition from \textsf{s1} to \textsf{s2}, which can not be found using the algorithm---this model is well-formed but not constructive!
+
+\section{Dataflow Models}
+As opposed to previous semantics, in \emph{dataflow models} a reaction is not simultaneous---if data flows from an actor \(A\) to an actor \(B\), it is put into a FIFO buffer in between while \(A\) produces, and \(B\) consumes.
+There are different dataflow semantics, in this lecture we will mainly look at \emph{synchronous dataflow} (SD).
+
+\subsection{Synchronous Dataflow}
+The goal in SD is finding schedules for firing actors, such that all token productions and consumptions are balanced, else the consumption buffer may overflow, or run out of tokens.
+To help with this task, we can define \emph{balance equations} between connected actors.
+
+\begin{definition}[Balance Equations]
+    Suppose we have \(n \in \N\) actors \([n]\) with \(m \in \N\) connectors.
+    Define the connection matrix \(\Gamma \in \N^{m \times n}\) where \(\Gamma_{i*}\) is the vector which defines connector \(i\).
+    The value \(\Gamma_{ij}\) is positive if connector \(i\) is connected with \(j\) and \(j\) produces tokens;
+    it is negative if \(j\) consumes tokens;
+    it is zero, if \(j\) is not connected through connector \(i\).
+
+    The \emph{balance equation} of the SD system is finding \(q \in \N^n\), such that \(\Gamma \times q = \vec 0\).
+    A non-zero solution for this equation tells how often in relation each actor must fire.
+
+    If the rank of \(\Gamma\) is \(n-1\), there exists a non-trivial solution for the balance equation.
+    If it is \(n\), which is the only other possibility, there does not exist a non-trivial solution.
+
+    As a reminder, the rank of \(\Gamma\) can be determined, by applying Gaussian elimination and reducing as many rows as possible.
+    The count of non-zero values in the diagonal of the resulting matrix is the rank of \(\Gamma\).
+\end{definition}
+
+If a solution is found for a balance equation, there exists a schedule for the system by decomposing the vector into a sum of unity vectors.
+E.g., solution \((1,2,1)^T\) is decomposed as \((1,0,0)^T + (0,1,0)^T + (0,1,0)^T + (0,0,1)^T\), which becomes the schedule \((1;2;2;3)\).
+For this it is advised to reduce to the minimal solution by scaling it to minimal length with integer values.
+
+\subsection{Other Variants}
+In \emph{dynamic dataflow} production/consumption rate depend on data, which makes the problem undecidable in means of finding a schedule or proving that a schedule runs with bounded memory.
+
+There also exists \emph{structured dataflow} or \emph{homogeneous} SDF, which is a restriction of dynamic dataflow to make scheduling decidable.
+
+Another variant are \emph{Petri nets} which use \emph{places} to store tokens one-by-one which move using transitions to other places.
+Each place can only store one token, which can be used to model different programs.
+Petri nets with finite possible states are equivalent to finite SMs.
