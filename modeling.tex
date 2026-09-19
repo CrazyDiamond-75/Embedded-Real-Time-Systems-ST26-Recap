@@ -136,7 +136,7 @@ They can be used for designing requirements and analysing the safety of the syst
 
 Currently we do not have defined, \emph{when} a reaction occurs, i.e., when to read the next input values for the signals.
 This is vitally important, as we can define ESMs with a default self transition, which increases the value of a variable---the value becomes dependent on the \emph{rate} of reactions, which is currently undefined.
-We will go over this notion of time in \cref{sec:?}.
+We will go over this notion of time in \cref{sec:6}.
 
 \newcommand{\true}{\texttt{true}}
 
@@ -306,3 +306,46 @@ There also exists \emph{structured dataflow} or \emph{homogeneous} SDF, which is
 Another variant are \emph{Petri nets} which use \emph{places} to store tokens one-by-one which move using transitions to other places.
 Each place can only store one token, which can be used to model different programs.
 Petri nets with finite possible states are equivalent to finite SMs.
+
+\section{Timed Models of Computation} \label{sec:6}
+In this section we will go over different mechanisms on when to trigger reactions/computations in discrete dynamics, synchronous reactive, or hybrid models.
+To simplify for now, we will assume discrete time, which postulates that outputs are computed instantaneous when its inputs are ready---there is no computation time, or it is negligible.
+
+The goal of this section is to define behaviour and implementation of a \emph{tick function}, which determines, when the model should react.
+
+\subsection{Event-Triggered Models}
+In event-triggered models, reactions only happen on outside events, e.g., a sensor-read button press.
+In our model this would be an input signal which is present.
+The tick function is defined as an event trigger, which sends a tick, exactly when any signal becomes present.
+
+The problem with this mechanism is, that reactions suddenly can not be triggered by internal events.
+As an example, consider an ESM with initial state \textsf{s}.
+This state also has a refinement based on variable \(x := 0\) and \(\dot x := 1\).
+Now we define a transition to state \textsf{s} with guard \(x = 1\), output \(x\), and set action \(x = 0\).
+If there is no input signal, or the input signal is not present directly after \(t=1\), the ESM will not output \(x\).
+Even worse, if the ESM reacts at \(t=2\), it will output \(2\), as the value as progressed further, than it should have, as the ESM can not react by itself.
+
+\subsection{Time-Triggered Models} \todo[inline]{\textsf{FIXME}: The definition in the lecture slides contradicts the figure at slide 9.}
+In time-triggered architectures, actors react according to a distributed clock.
+This means, whenever the clock ticks, buffered inputs, if any, are distributed to the actor and it reacts.
+The tick function can be implemented using specific hardware for clocks, e.g., piezo-electric quartz crystals.
+
+With this notion, there still come up problems, as event-driven reactions are delayed to the next tick.
+
+\subsection{Multiform Notion of Time}
+In multiform time, both events and a clock trigger reactions.
+It is implemented by combining the two approaches together.
+
+There still remains the problem, that if the clock produces not enough ticks, internal reactions are delayed too much, which can be dangerous in the real-time systems context.
+
+\subsection{Eager Semantics}
+The best model should trigger reactions as soon as possible, in the timing relevant point in time, as defined in synchronous reactive semantics.
+This ideal is also called \emph{eager semantics}.
+
+Implementing eager semantics has a lot of requirements to make them realistically feasible for real-time systems.
+The main step in doing this implementation is using \emph{dynamic ticks}.
+
+Dynamic ticks are an extension of multiform time, where the clock additionally stores two values, \textsf{deltaT} the time since last tick and \textsf{sleepT} requested delay until next tick.
+The first is calculated on each tick, when reacting due to an event.
+The latter is set on each reaction based on information about the automata in its current state.
+If, while waiting, an event happens, and the sleep is interrupted, \textsf{sleepT} is changed based on \textsf{deltaT}.
