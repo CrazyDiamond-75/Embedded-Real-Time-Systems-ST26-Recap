@@ -1,5 +1,5 @@
 \chapter{Modeling Dynamic Behaviours}
-In this chapter we will look at different dynamic mechanisms to model using a mathematical model based on so-called \emph{actors} and \emph{signals}.
+In this chapter we will look at different dynamic mechanisms to mathematically model environment and system using so-called \emph{actor-based} systems.
 
 \section{Continuous Dynamics} \label{sec:1}
 Continuous dynamics directly mimic continuous physical processes.
@@ -161,16 +161,15 @@ This hybrid automata defines a continuous actor with no input signal, which outp
 \section{State Machine Compositions}
 It is possible to combine different SM-refined (discrete) actors together on a top level.
 There are four different compositions with different semantics.
-\begin{enumerate}
-    \item Synchronous side-by-side composition:
-        Multiple SMs in parallel with reaction only possible when all SMs react.
-    \item Asynchronous side-by-side composition:
-        Multiple SMs in parallel with non-deterministic reaction when any SM can react.
-    \item Cascade composition:
-        Multiple SMs chained together with output signals as input signals for another SM.
-    \item Feedback composition:
-        Recursive connection of a SM which sets input signals to own output signals.
-\end{enumerate}
+\begin{description}
+    \item[Synchronous side-by-side composition] Multiple SMs in parallel with reaction only possible when all SMs react.
+
+    \item[Asynchronous side-by-side composition] Multiple SMs in parallel with non-deterministic reaction when any SM can react.
+
+    \item[Cascade composition] Multiple SMs chained together with output signals as input signals for another SM.
+
+    \item[Feedback composition] Recursive connection of a SM which sets input signals to own output signals.
+\end{description}
 
 For the following definitions, we will look at compositions between two SM actors \(A\) and \(B\) with states \(S_A, S_B\), input valuations (or guards) \(i_A, i_B\), output signals \(o_A, o_B\), initial states \(I_A, I_B\), and update function \(u_A : S_A \times i_A \rightarrow S_A \times o_A\), for \(B\) analogous, to represent the transitions.
 

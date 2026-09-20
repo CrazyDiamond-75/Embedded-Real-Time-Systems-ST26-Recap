@@ -99,7 +99,13 @@
     stringstyle=\color{string},
     keywordstyle=\bfseries\color{codepurple},
     texcl=true,
-    mathescape=true
+    mathescape=true,
+}
+
+\lstdefinestyle{c}{
+    style=basic,
+    language=c,
+    morekeywords={size_t}
 }
 
 \lstdefinestyle{pseudo}{
@@ -108,4 +114,4 @@
     morekeywords={do, od, for, if, fi, then, else, to, def, in, forall, exists, while, accept, reject},
 }
 
-\lstset{style=pseudo}
+\lstset{style=c}

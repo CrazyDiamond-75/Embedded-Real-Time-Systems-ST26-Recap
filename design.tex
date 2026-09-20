@@ -1,1 +1,89 @@
 \chapter{Design of Embedded Systems}
+In this chapter, we go over different practices and technologies regarding embedded systems.
+Most notably, sensors, actuators, embedded processors, memory architectures, input output (IO), scheduling, and a bit of Lingua Franka---an embedded systems programming language.
+
+\section{Sensors and Actuators}
+Sensors are devices which measure a physical quantity, while actuators modify a physical quantity.
+One vitally important sensor is the \emph{accelerometer}, which measures acceleration, but it can also be used to measure the tilt of an embedded system.
+To achieve this, optical gyroscopes can also be used.
+Accelerometers can also be used to track a rough estimation of position based on measured accelerations, this is called an \emph{intertial navigation system} (INS).
+
+A problem all sensors have is, that they are notoriously known for \emph{drift}, which makes calibration vitally important.
+To analyse this problem and other inaccuracies of a sensor, we define the \emph{affine sensor model}.
+
+\begin{definition}[Affine Sensor Model]
+    The affine sensor model defines physical properties as values \(x \in \R\) and sensors as so-called \emph{affine} linear functions \(F : \R \rightarrow \R, x \mapsto ax + b\), with \(a, b \in \R\), where \(a\) is called \emph{sensitivity} and \(b\) is called \emph{bias}.
+
+    To further enhance the realism of our model, we consider a \emph{saturated} range \(L, H \in \R, L \le H\), and define the sensor function as
+    \begin{IEEEeqnarray*}{c}
+        F : \R \rightarrow \R, x \mapsto
+        \begin{cases}
+            ax + b & \text{if} x \in [L, H] \\
+            aH + b & \text{if} x > H \\
+            aL + b & \text{if} x < L
+        \end{cases}.
+    \end{IEEEeqnarray*}
+    As a last enhancement, we consider the \emph{precision} \(p \in \R\) of the sensor, which is the smallest absolute difference between sensor readings, thus an even more realistic function is \(F'(x) = p \cdot \left\lfloor F(x) / p\right\rfloor\), which clamps everything into a partitioned interval.
+
+    The dynamic range \(D := \frac{H-L}{p}\) is often notated in decibels \(D_\textit{dB} := 20\log_{10} D\).
+    A quantized signal like \(F'\) often is an \(n \in \N\) bit signal, which results in \(D_\textit{dB} := 20n \log_{10} 2 \approx 6n\).
+\end{definition}
+When using sensors, it is advised to carefully use them if they are prune to aliasing.
+Alternatively, use higher-precision sensors.
+
+Another way to handle sensor inprecision is to use multiple different sensors for the same quantity, which is called \emph{redundancy}.
+
+A classic way to drive actuators is pulse-width modulation (PWM), which uses repeated small pulses of the same voltage.
+Increasing pulse frequency, increases delivered power to the actuators.
+
+\section{Memory Architectures}
+Memory is used for different tasks in embedded systems, e.g., storage or communication with sensors and actuators.
+Embedded systems memory is often more restrictive than general purpose memory in size, power, and reliability.
+There are different types of memory.
+\begin{description}
+    \item[Non-volatile] preserves contents when power is off \hfill
+        \begin{description}
+            \item[Flash] Electrically erasable programmable read-only memory.
+                Erases a block at a time.
+                There is a limited number of write/erase cycles, i.e., around 100000.
+
+            \item[Disks] Too slow for embedded systems.
+        \end{description}
+    \item[Volatile] loses contents when power is off \hfill
+        \begin{description}
+            \item[Registers] Fastest access time possible, extremely expensive and power hungry.
+                Used directly inside processors.
+
+            \item[SRAM] Static random-access memory.
+                Very fast, deterministic access time.
+                Expensive and power hungry.
+                Used for (processor) caches and scratchpads.
+
+            \item[DRAM] Dynamic random-access memory.
+                Slower than SRAM, but less power hungry and expensive.
+        \end{description}
+\end{description}
+
+Typically, embedded systems chips use memory-maps to partition all memory and sensor/actuator interfaces into different address spaces.
+E.g., using \lstinline|0x0000| to \lstinline|0x1FFF| for flash, \lstinline|0x2000| to \lstinline|0x4FFF| for DRAM, and \lstinline|0x5000| to \lstinline|0x5FFF| for SRAM.
+
+Sometimes controllers use an e.g., 8-bit architecture, but 16-bit addresses.
+In this case, the controller needs two cycles to determine the position in memory for an address.
+
+It is possible to manage the program memory in different methods.
+C programs typically use three different allocation methods for this.
+\begin{description}
+    \item[Static Memory] The compiler chooses the address at which to store a variable.
+        A variable is static, if it is a global variable, or when it is declared \lstinline|static| inside the scope of a function.
+
+    \item[Stack] The program dynamically allocates the variable using a LIFO strategy, pushing new allocations when entering a scope and popping on leaving a scope.
+        Thus in C, stack-allocated variables are any non-static variables in a function scope.
+
+    \item[Heap] The developer manually dynamically allocates and deallocates memory on an extending structure.
+        This is done by allocating address spaces with \lstinline|void* malloc(size_t size)|, and deallocating it with \lstinline|void free(void* ptr)|.
+\end{description}
+Sometimes stack and heap grow in the direction of the other, which limits (process) memory, but on embedded systems, a program typically can use all memory, as neither operating system nor processes exist.
+
+Another topic to note is memory hierarchy.
+Most systems implement this using a linear hierarchy: Flash can be read into memory, memory caches parts of page lines, and registers load individual values.
+Scratchpads are developer-managed and typically used like cache.
