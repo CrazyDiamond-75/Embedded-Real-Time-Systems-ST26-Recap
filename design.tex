@@ -87,3 +87,37 @@ Sometimes stack and heap grow in the direction of the other, which limits (proce
 Another topic to note is memory hierarchy.
 Most systems implement this using a linear hierarchy: Flash can be read into memory, memory caches parts of page lines, and registers load individual values.
 Scratchpads are developer-managed and typically used like cache.
+
+\section{Input and Output}
+Communication between different components and devices in an embedded system is often an IO task.
+Most microcontroller board realize this using general-purpose input/output (GPIO) pins, which can be used to read and write small voltage signals.
+Often, specific GPIO pins are reserved for specific purposes, such as \emph{ADC}, \emph{UART}, \emph{I2C}, \emph{SPI}, PWM, or serve to power electrical circuits using a higher voltage and ground.
+
+There are two different general methods for wired interfaces: parallel connections, where each wire transfers one bit, and serial connections, where each wire serves one direction.
+There also exist hybrid approaches, but generally, serial transfers are preferred because of different problems with parallel transfers, i.e., interference or needed synchrony.
+
+An example serial standard is RS-232, where positive and negative voltage encodes zeroes and ones.
+A transfer is done using a starting zero bit, data fragment (typically one byte) with LSB first, and a trailing one bit.
+Sending, e.g., 4 bytes, would be done by streaming each individual byte according to the format.
+The advantage of RS-232 is that it does not need a common clock between sender and receiver.
+It only needs the receiver clock to be faster than the frequency between bit signals without missing data.
+
+Universal Serial Bus (USB) encodes data using two logical signals, D- and D+.
+Using this, there are four different combinations, which can be used to model different packet sizes, as there is an individual combination for the start and end of packet.
+Another difference is, that the receiver signals the sender to send data and synchronisation is implemented\footnote{A great explanation on the implementation of the USB protocol is found here: \url{https://en.wikipedia.org/wiki/USB_communications\#Line_transition_state}.}.
+
+Software IO input interfacing is implemented using two different approaches, \emph{polling} and \emph{interrupts}.
+
+\subsection{Polling}
+In polling, the active thread periodically looks in the IO interface, and uses and input if it is available.
+While it is simple to implement, the problem with polling is, that it either needs busy wait, or use repeated sleeps.
+Either, a lot of CPU time is wasted or data may be missed if not carefully implemented.
+
+\subsection{Interrupts}
+Interrupts prevent busy waiting by putting the active thread into an blocked IO mode, until hardware alerts the processor that input is ready.
+Upon the interrupt is triggered, an interrupt service routine is called, which needs to have been previously registered.
+
+A big advantage of this is, that the program can do other things while waiting on the interrupt, as we are not restricted to one thread.
+Interrupts can also be used for timer interrupts, where an Interrupt service routine is triggered according to a periodic timer, e.g., blink every two seconds.
+
+It has to be noted though to be careful with interrupts, as inter-thread interaction is non-deterministic and dangerous without semaphores or locks.
