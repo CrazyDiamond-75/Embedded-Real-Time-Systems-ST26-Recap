@@ -324,7 +324,7 @@ Now we define a transition to state \textsf{s} with guard \(x = 1\), output \(x\
 If there is no input signal, or the input signal is not present directly after \(t=1\), the ESM will not output \(x\).
 Even worse, if the ESM reacts at \(t=2\), it will output \(2\), as the value as progressed further, than it should have, as the ESM can not react by itself.
 
-\subsection{Time-Triggered Models} \todo[inline]{\textsf{FIXME}: The definition in the lecture slides contradicts the figure at slide 9.}
+\subsection{Time-Triggered Models}
 In time-triggered architectures, actors react according to a distributed clock.
 This means, whenever the clock ticks, buffered inputs, if any, are distributed to the actor and it reacts.
 The tick function can be implemented using specific hardware for clocks, e.g., piezo-electric quartz crystals.
