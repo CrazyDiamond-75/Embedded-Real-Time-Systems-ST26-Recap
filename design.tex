@@ -121,3 +121,54 @@ A big advantage of this is, that the program can do other things while waiting o
 Interrupts can also be used for timer interrupts, where an Interrupt service routine is triggered according to a periodic timer, e.g., blink every two seconds.
 
 It has to be noted though to be careful with interrupts, as inter-thread interaction is non-deterministic and dangerous without semaphores or locks.
+
+\section{Concurrency}
+As seen in the last section, multitasking is unavoidable in many real-time systems.
+On that notion, it is important to differentiate between \emph{concurrency}, the conceptual simultaneous execution, and \emph{parallelism}, where simultaneous execution on distinct physical hardware is considered.
+A parallel execution, e.g., two threads on different cores, is concurrent, while a concurrent execution, e.g., two processes being scheduled on the same core, does not have to be parallel.
+
+In POSIX/GNU, threads are sequential procedures that share memory.
+The standard method to create threads is using the POSIX Threads (PTreads) API, where, most notably, a \lstinline|void* _(void*)| function pointer, and some \lstinline|void*| argument is passed to \lstinline|pthread_create|.
+Waiting until a thread terminates is done using \lstinline|pthread_join|.
+
+A more modern framework for threads is \emph{OpenMP}, which is generally considered to be more handy, as it implements a lot of useful tools, e.g., reductions or dependencies.
+
+A key takeaway is, that threads are dangerous to use---they introduce non-deterministic properties in a wanted-to-be deterministic system.
+From the perspective of two threads using the same memory, when one changes something the other might use in some time its entire universe suddenly changes.
+Handling this non-determinism is done with executive constrains, e.g., mutexes or limited access.
+
+Another method to implement concurrency is by starting with a solid foundation, and only applying extensions, which are known to be well-behaved.
+This is the approach in many embedded systems programming languages, e.g., \emph{Lingua Franka} or \emph{SCCharts}.
+
+Something to note is also, that the previously defined behaviour also needs to be implemented on the device, side of things.
+Before programming an embedded system, one needs to implement a microkernel, which handles operating systems side of things and implements every feature the programmer needs.
+An example of such a microkernel is the POSIX compliant Linux kernel based \emph{Zephyr} micro operating system.
+
+While implementing a microkernel, thread scheduling is an important and hard task.
+
+\subsection{Scheduling}
+In this section, we will go over different scheduling algorithms and strategies, to decide which scheduling is fit for embedded- and real-time systems.
+\begin{description}
+    \item[Preemptive scheduling] In preemptive scheduling all threads have priorities.
+        In every moment the scheduler lets the non-blocked thread with highest priority execute.
+
+    \item[Non-preemptive scheduling] In non-preemptive scheduling algorithms, a task, e.g., a thread, is fragmented into jobs, which the scheduler picks according to some strategy.
+\end{description}
+There are a lot of different strategies for scheduling algorithms.
+We will define a scheduler to be \emph{optimal}, iff it finds a schedule according to a \emph{feasibility} criteria if one exists.
+
+\subsubsection{Rate Monotonic Scheduling}
+Rate monotonic scheduling (RMS) is a preemptive scheduling algorithm which assumes a simple process model with \(n\) independent tasks, period (deadlines) \(T_1, \dots, T_n \in \R\), known worst-case execution times \(C_1, \dots, C_n \in \R\), and negligible context switch time.
+RMS works by defining priorities by inverse period, and picking the highest priority task---the task with soonest deadline, and interrupting lower-priority tasks.
+
+In RMS, feasibility is defined to mean, that every task completes before its period.
+It can be shown, that if any non-RMS schedule is feasible, the RMS schedule is also feasible.
+For this, the worst case is considered, where a low priority task starts when a high priority task is active.
+In that case a non-RMS schedule would pick the low-priority task over the high-priority task and result in total computation time \(C_1 + C_2\), where \(T_2 < T_1\).
+The schedule exists if \(C_1 + C_2 \le T_2\), and in that case, the RMS schedule is also feasible.
+
+It can be shown, that if the average utilisation \(\mu := \sum_{i \in [n]}C_i/T_i\) is smaller or equal to \(n(2^{1/n} - 1)\), there always exists a feasible schedule---this is called the \emph{utilization-based schedulability theorem} by Liu and Layland.
+If \(\mu > m\), where \(m \in \N\) is the number of processors, there can not be a feasible RMS schedule.
+Thus, as \(\mu\) is bound by one in the case the inequality holds, a RMS schedule is always guaranteed.
+
+If \(\mu \le 1\) and each task period is a multiple of the period of the next higher priority task, schedulability is also guaranteed.
