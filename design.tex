@@ -6,7 +6,7 @@ Most notably, sensors, actuators, embedded processors, memory architectures, inp
 Sensors are devices which measure a physical quantity, while actuators modify a physical quantity.
 One vitally important sensor is the \emph{accelerometer}, which measures acceleration, but it can also be used to measure the tilt of an embedded system.
 To achieve this, optical gyroscopes can also be used.
-Accelerometers can also be used to track a rough estimation of position based on measured accelerations, this is called an \emph{intertial navigation system} (INS).
+Accelerometers can also be used to track a rough estimation of position based on measured accelerations, this is called an \emph{inertial navigation system} (INS).
 
 A problem all sensors have is, that they are notoriously known for \emph{drift}, which makes calibration vitally important.
 To analyse this problem and other inaccuracies of a sensor, we define the \emph{affine sensor model}.
@@ -158,7 +158,7 @@ There are a lot of different strategies for scheduling algorithms.
 We will define a scheduler to be \emph{optimal}, iff it finds a schedule according to a \emph{feasibility} criteria if one exists.
 
 \subsubsection{Rate Monotonic Scheduling}
-Rate monotonic scheduling (RMS) is a preemptive scheduling algorithm which assumes a simple process model with \(n\) independent tasks, period (deadlines) \(T_1, \dots, T_n \in \R\), known worst-case execution times \(C_1, \dots, C_n \in \R\), and negligible context switch time.
+Rate Monotonic Scheduling (RMS) is a preemptive scheduling algorithm which assumes a simple process model with \(n\) independent tasks, period (deadlines) \(T_1, \dots, T_n \in \R\), known worst-case execution times \(C_1, \dots, C_n \in \R\), and negligible context switch time.
 RMS works by defining priorities by inverse period, and picking the highest priority task---the task with soonest deadline, and interrupting lower-priority tasks.
 
 In RMS, feasibility is defined to mean, that every task completes before its period.
@@ -172,3 +172,34 @@ If \(\mu > m\), where \(m \in \N\) is the number of processors, there can not be
 Thus, as \(\mu\) is bound by one in the case the inequality holds, a RMS schedule is always guaranteed.
 
 If \(\mu \le 1\) and each task period is a multiple of the period of the next higher priority task, schedulability is also guaranteed.
+
+\subsubsection{Earliest Due Date}
+Earliest Due Date (EDD) is a non-preemptive scheduling algorithm, which executes tasks in order of non-decreasing deadlines.
+The difference to RMS is, that there are no task periods, but only deadlines, and that the algorithm is dynamic---when the active task finishes, the algorithm schedules the task with the smallest deadline.
+
+This behaviour can be implemented using a min-heap priority queue which stores tasks using the deadline as a key.
+
+We define \emph{maximum lateness} as \(L_\text{max} = \max_{i \in [n]}\{F_i - T_i\}\), where \(F_i\) is the calculated finishing time of task \(i\).
+For non-preemptive scheduling, EDD minimizes maximum lateness.
+
+\subsubsection{Earliest Deadline First}
+Earliest Deadline First (EDF) is a preemptive version of EDD---on each scheduling event, i.e., a task finishes or some task changes blocked state, the scheduler schedules the task with minimal deadline.
+Another extension is, that tasks may arrive at any time, which means, that if an earlier due task arrives, the scheduler will change to that task.
+
+The drawback of previously discussed algorithms is, that they are not optimal under precedence constrains---when a task can only be started, if it is dependent on another task.
+
+EDF can be modified to meet precedence constrains by modifying deadlines of precedences.
+
+\subsubsection{Latest Deadline First}
+Latest Deadline First (LDF) is a variation, where the schedule is built by always scheduling the leaf node from the dependency graph with the latest deadline last.
+LDF is optimal under precedence constrains.
+
+\subsection{Scheduling Anomalies}
+Using some form of mutex between threads complicates scheduling.
+When a low-priority task accesses a critical section, any high-priority task, which wants to access the section, stays blocked if the lower-priority task is blocked by a third task.
+In this case, the high-priority task interchanges priority with the third task.
+This phenomenon is called \emph{priority inversion}---the high-priority task is now dependent of the low-priority task, which is blocked by the third task.
+
+Priority inversion can be mitigated by using the Priority Inheritance Protocol (PIP), which inherits the high priority to a lower-priority task, if it owns the lock on a critical section, which the high-priority task wants to acquire.
+
+Another scheduling anomaly is a \emph{deadlock}, in which a cyclic dependency between tasks causes an infinite suspension.
