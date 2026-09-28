@@ -26,12 +26,12 @@ To analyse this problem and other inaccuracies of a sensor, we define the \emph{
     As a last enhancement, we consider the \emph{precision} \(p \in \R\) of the sensor, which is the smallest absolute difference between sensor readings, thus an even more realistic function is \(F'(x) = p \cdot \left\lfloor F(x) / p\right\rfloor\), which clamps everything into a partitioned interval.
 
     The dynamic range \(D := \frac{H-L}{p}\) is often notated in decibels \(D_\textit{dB} := 20\log_{10} D\).
-    A quantized signal like \(F'\) often is an \(n \in \N\) bit signal, which results in \(D_\textit{dB} := 20n \log_{10} 2 \approx 6n\).
+    A quantized signal like \(F'\) often is a \(n \in \N\) bit signal, which results in \(D_\textit{dB} := 20n \log_{10} 2 \approx 6n\).
 \end{definition}
 When using sensors, it is advised to carefully use them if they are prune to aliasing.
 Alternatively, use higher-precision sensors.
 
-Another way to handle sensor inprecision is to use multiple different sensors for the same quantity, which is called \emph{redundancy}.
+Another way to handle sensor imprecision is to use multiple different sensors for the same quantity, which is called \emph{redundancy}.
 
 A classic way to drive actuators is pulse-width modulation (PWM), which uses repeated small pulses of the same voltage.
 Increasing pulse frequency, increases delivered power to the actuators.
@@ -41,7 +41,7 @@ Memory is used for different tasks in embedded systems, e.g., storage or communi
 Embedded systems memory is often more restrictive than general purpose memory in size, power, and reliability.
 There are different types of memory.
 \begin{description}
-    \item[Non-volatile] preserves contents when power is off \hfill
+    \item[Non-volatile] Preserves contents when power is off \hfill
         \begin{description}
             \item[Flash] Electrically erasable programmable read-only memory.
                 Erases a block at a time.
@@ -49,7 +49,7 @@ There are different types of memory.
 
             \item[Disks] Too slow for embedded systems.
         \end{description}
-    \item[Volatile] loses contents when power is off \hfill
+    \item[Volatile] Loses contents when power is off \hfill
         \begin{description}
             \item[Registers] Fastest access time possible, extremely expensive and power hungry.
                 Used directly inside processors.
@@ -106,7 +106,7 @@ Universal Serial Bus (USB) encodes data using two logical signals, D- and D+.
 Using this, there are four different combinations, which can be used to model different packet sizes, as there is an individual combination for the start and end of packet.
 Another difference is, that the receiver signals the sender to send data and synchronisation is implemented\footnote{A great explanation on the implementation of the USB protocol is found here: \url{https://en.wikipedia.org/wiki/USB_communications\#Line_transition_state}.}.
 
-Software IO input interfacing is implemented using two different approaches, \emph{polling} and \emph{interrupts}.
+Software IO input interfacing is implemented using two different approaches: \emph{polling} and \emph{interrupts}.
 
 \subsection{Polling}
 In polling, the active thread periodically looks in the IO interface, and uses and input if it is available.
@@ -114,7 +114,7 @@ While it is simple to implement, the problem with polling is, that it either nee
 Either, a lot of CPU time is wasted or data may be missed if not carefully implemented.
 
 \subsection{Interrupts}
-Interrupts prevent busy waiting by putting the active thread into an blocked IO mode, until hardware alerts the processor that input is ready.
+Interrupts prevent busy waiting by putting the active thread into a blocked IO mode, until hardware alerts the processor that input is ready.
 Upon the interrupt is triggered, an interrupt service routine is called, which needs to have been previously registered.
 
 A big advantage of this is, that the program can do other things while waiting on the interrupt, as we are not restricted to one thread.
@@ -127,7 +127,7 @@ As seen in the last section, multitasking is unavoidable in many real-time syste
 On that notion, it is important to differentiate between \emph{concurrency}, the conceptual simultaneous execution, and \emph{parallelism}, where simultaneous execution on distinct physical hardware is considered.
 A parallel execution, e.g., two threads on different cores, is concurrent, while a concurrent execution, e.g., two processes being scheduled on the same core, does not have to be parallel.
 
-In POSIX/GNU, threads are sequential procedures that share memory.
+In POSIX/GNU threads are sequential procedures that share memory.
 The standard method to create threads is using the POSIX Threads (PTreads) API, where, most notably, a \lstinline|void* _(void*)| function pointer, and some \lstinline|void*| argument is passed to \lstinline|pthread_create|.
 Waiting until a thread terminates is done using \lstinline|pthread_join|.
 
@@ -135,7 +135,7 @@ A more modern framework for threads is \emph{OpenMP}, which is generally conside
 
 A key takeaway is, that threads are dangerous to use---they introduce non-deterministic properties in a wanted-to-be deterministic system.
 From the perspective of two threads using the same memory, when one changes something the other might use in some time its entire universe suddenly changes.
-Handling this non-determinism is done with executive constrains, e.g., mutexes or limited access.
+Handling this nondeterminism is done with executive constrains, e.g., mutexes or limited access.
 
 Another method to implement concurrency is by starting with a solid foundation, and only applying extensions, which are known to be well-behaved.
 This is the approach in many embedded systems programming languages, e.g., \emph{Lingua Franka} or \emph{SCCharts}.
@@ -169,7 +169,7 @@ The schedule exists if \(C_1 + C_2 \le T_2\), and in that case, the RMS schedule
 
 It can be shown, that if the average utilisation \(\mu := \sum_{i \in [n]}C_i/T_i\) is smaller or equal to \(n(2^{1/n} - 1)\), there always exists a feasible schedule---this is called the \emph{utilization-based schedulability theorem} by Liu and Layland.
 If \(\mu > m\), where \(m \in \N\) is the number of processors, there can not be a feasible RMS schedule.
-Thus, as \(\mu\) is bound by one in the case the inequality holds, a RMS schedule is always guaranteed.
+Thus, as \(\mu\) is bound by one in the case the inequality holds, an RMS schedule is always guaranteed.
 
 If \(\mu \le 1\) and each task period is a multiple of the period of the next higher priority task, schedulability is also guaranteed.
 
@@ -177,7 +177,7 @@ If \(\mu \le 1\) and each task period is a multiple of the period of the next hi
 Earliest Due Date (EDD) is a non-preemptive scheduling algorithm, which executes tasks in order of non-decreasing deadlines.
 The difference to RMS is, that there are no task periods, but only deadlines, and that the algorithm is dynamic---when the active task finishes, the algorithm schedules the task with the smallest deadline.
 
-This behaviour can be implemented using a min-heap priority queue which stores tasks using the deadline as a key.
+This behaviour can be implemented using a minimum heap priority queue which stores tasks using the deadline as a key.
 
 We define \emph{maximum lateness} as \(L_\text{max} = \max_{i \in [n]}\{F_i - T_i\}\), where \(F_i\) is the calculated finishing time of task \(i\).
 For non-preemptive scheduling, EDD minimizes maximum lateness.
@@ -188,7 +188,7 @@ Another extension is, that tasks may arrive at any time, which means, that if an
 
 The drawback of previously discussed algorithms is, that they are not optimal under precedence constrains---when a task can only be started, if it is dependent on another task.
 
-EDF can be modified to meet precedence constrains by modifying deadlines of precedences.
+EDF can be modified to meet precedence constrains by modifying deadlines of dependencies.
 
 \subsubsection{Latest Deadline First}
 Latest Deadline First (LDF) is a variation, where the schedule is built by always scheduling the leaf node from the dependency graph with the latest deadline last.
@@ -203,3 +203,13 @@ This phenomenon is called \emph{priority inversion}---the high-priority task is 
 Priority inversion can be mitigated by using the Priority Inheritance Protocol (PIP), which inherits the high priority to a lower-priority task, if it owns the lock on a critical section, which the high-priority task wants to acquire.
 
 Another scheduling anomaly is a \emph{deadlock}, in which a cyclic dependency between tasks causes an infinite suspension.
+
+Deadlocks can be prevented using the Priority Ceiling Protocol (PCP), which assigns each lock a \emph{priority ceiling} equal to the highest-priority task that can lock it.
+A task can only acquire a lock if its priority is strictly higher than the priority ceilings of all locks currently held by other tasks.
+
+\subsubsection{Richards Anomalies}
+A special sort of scheduling anomalies are \emph{Richards anomalies}, named after Richard Graham.
+They occur when using a priority based scheduling algorithm on multicore processors.
+If tasks are scheduled as soon as possible based on their priority and dependency, increasing the number of available cores, reducing task computation time, or weakening precedence constrains might result in a worse schedule!
+
+The takeaway of these anomalies are, that scheduling algorithms are brittle---small changes can have big and unforeseen consequences!
