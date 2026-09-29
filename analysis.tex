@@ -61,9 +61,28 @@ Thus, \(\G\phi\) is equivalent to mean, that \(\phi\) holds for all steps of the
     For some trace and LTL formula \(\phi\), we have
     \begin{IEEEeqnarray}{l}
         \G\phi = \neg\F\neg\phi, \\
-        \F\phi = \texttt{true} \U \phi, \\
-        \text{\(X\) can not be expressed in terms of \(\G\), \(\F\) or \(\U\).}
+        \F\phi = \true \U \phi, \\
+        \text{\(X\) can not be expressed in terms of \(\G\), \(\F\), or \(\U\).}
     \end{IEEEeqnarray}
 \end{lemma}
 
 Real-time temporal logic redefines the syntax of \(\F\) to uphold deadlines, e.g., \(\F_{\le 2.5 \text{ms}}\) means, that the following formula must hold within \(2.5\) ms of the trace.
+
+\section{Equivalence and Refinement}
+Another analysis goal for this chapter is the comparison of different models.
+There are different equality metrics, which can be used to compare two models.
+
+\begin{definition}[Type Equivalence]
+    Two actors are \emph{type equivalent} if they have the same input and output ports, which have the same sets of possible input and output valuations.
+    In other words, they typecheck.
+\end{definition}
+
+\begin{definition}[Language Equivalence]
+    Two actors are \emph{language equivalent} if for every input sequence they produce the same output sequence.
+\end{definition}
+
+\begin{definition}[Bisimilarity]
+    An actor \(M_2\) is \emph{bisimilar} to actor \(M_1\) if for every state of \(M_1\) there exists a state in \(M_2\) which reacts exactly the same way.
+
+    For deterministic SMs, language equivalence and bisimilarity are the same, but this is not the case in nondeterministic SMs.
+\end{definition}
