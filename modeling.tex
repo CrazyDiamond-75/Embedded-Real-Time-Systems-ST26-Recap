@@ -1,4 +1,4 @@
-\chapter{Modeling Dynamic Behaviours}
+\chapter{Modeling Dynamic Behaviours}\label{ch:1}
 In this chapter we will look at different dynamic mechanisms to mathematically model environment and system using so-called \emph{actor-based} systems.
 
 \section{Continuous Dynamics} \label{sec:1}
@@ -90,9 +90,9 @@ In discrete dynamics we do not look at signals which provide input at every mome
 \end{definition}
 
 As mentioned, we consider a discrete actor to react if, but not only if it changes its internal state, this can be done in different ways.
-Final state machines (FSM) can be used as a \emph{refinement} of a discrete actor to define its behaviour.
+Finite state machines (FSM) can be used as a \emph{refinement} of a discrete actor to define its behaviour.
 
-\begin{definition}[Final State Machines]
+\begin{definition}[Finite State Machines]
     FSMs are mathematical constructions consisting of \emph{states}, \emph{transitions}, and an \emph{initial} state.
     A FSM starts in the initial state.
     Transitions are of form \(s, g \rightarrow s', o\), where \(s\) is the state the transition starts in, \(g\) is the \emph{guard} of the transition, \(s'\) is the state the transition ends in, and \(o\) is the (optimal) output valuation the FSM produces, when the transition is taken.
@@ -116,10 +116,26 @@ Final state machines (FSM) can be used as a \emph{refinement} of a discrete acto
 
 We extend the FSM model using the following model.
 
-\begin{definition}[Extended State Machines]
+\begin{definition}[Extended State Machines and Hierarchical State Machines]
     Extended state machines (ESMs) add more features in comparison to FSMs.
     The extension brings variables \(v \in \mathcal V\) and enables transitions to use \emph{set actions} \(v := \sigma\), where \(\sigma\) is the new value for \(v\).
     \(\sigma\) can be any right-hand side of an output action---it can thus also be based on input signals.
+
+    ESMs can also be \emph{hierarchical} which defines refinements in states as other state machines.
+    A state with such a refinement is in a substate defined by the underlying state machine.
+    The semantics are defined, such that first the refinement (if any) reacts, and then the top-level state machine reacts.
+    These two reactions are counted as one reaction as their transitions are simultaneous even if one is evaluated after the other.
+
+    Transitions are redefined on ESMs with hierarchical refinements, where the normal transition is called \emph{history transition}, as it remembers the previous state of a refinement if its container state is reached.
+    There can also be \emph{reset transitions}, denoted with a hollow arrow, which reset to the starting state of a state refinement.
+    And finally, there are also \emph{preemptive transitions}, denoted with a red circle at the start of it, which enforce that a refinement does not react, if a state with an outgoing preemptive transition contains it.
+
+    Flattening hierarchical state machines with history transitions defines a composed state space according to the semantics of the transitions.
+    If a refinement reacts, it should reach another composed state with the current top-level state, if it does not change.
+
+    Flattening hierarchical state machines with reset transitions do not need a composed state space, as they do not remember the refinement state, when transitioning on top-level.
+
+    Flattening hierarchical state machines with preemptive transitions is done by removing transitions and guards which make a substate react.
 \end{definition}
 
 We also define some basic terms on SMs.
@@ -136,12 +152,12 @@ They can be used for designing requirements and analysing the safety of the syst
 
 Currently we do not have defined, \emph{when} a reaction occurs, i.e., when to read the next input values for the signals.
 This is vitally important, as we can define ESMs with a default self transition, which increases the value of a variable---the value becomes dependent on the \emph{rate} of reactions, which is currently undefined.
-We will go over this notion of time in \cref{sec:6}.
+We will go over this notion of time in \Cref{sec:6}.
 
 \newcommand{\true}{\texttt{true}}
 
 \section{Hybrid Automata}
-In \cref{sec:1,sec:2} we defined continuous and discrete automata, in this section we will define \emph{hybrid automata}, which combine both approaches by refining individual states with continuous actors.
+In \Cref{sec:1,sec:2} we defined continuous and discrete automata, in this section we will define \emph{hybrid automata}, which combine both approaches by refining individual states with continuous actors.
 
 In hybrid automata, signals do not have to be discrete---they are allowed to be continuous-time signals.
 This again begs the question \emph{when} a reaction happens.
@@ -224,14 +240,14 @@ By reorganizing any composition of actors, it can be shown that there is an equa
     As mentioned, any composition can also be rewritten as a feedback composition using one actor, thus we only need to consider \(o_C \subseteq i_C\) if \(C\) is the refined feedback composition of \(A\) and \(B\), which is equivalent to the statement prior\footnote{It has to be noted, that for this case, there are two different versions of \(C\), when composing it, such that there is a connection between \(A\) and \(B\) inside the composed actor. The inner signal can also be mapped externally and vice versa. For this example we consider a version where \(A\) and \(B\) are not connected in the body of \(C\) but using a signal which is the two signals concatenated.}.
 
     The goal is finding the \emph{fixed point} signal \(s : \N \rightarrow o_C \cup \{\abst\}\) which flows from the output of \(C\) to its input.
-    \(s\) must hold \cref{eq:1} to be a fixed point, where \(\textsf C : (\N \rightarrow i_C \cup \{\abst\}) \rightarrow (\N \rightarrow o_C \cup \{\abst\})\) is the actor function of \(C\).
+    \(s\) must hold \Cref{eq:1} to be a fixed point, where \(\textsf C : (\N \rightarrow i_C \cup \{\abst\}) \rightarrow (\N \rightarrow o_C \cup \{\abst\})\) is the actor function of \(C\).
 
     \begin{IEEEeqnarray}{c} \label{eq:1}
         \textsf C(s) = s
     \end{IEEEeqnarray}
 
     To find \(s\), we consider the \emph{firing function} \(f_C : \N \rightarrow (i_C \cup \{\abst\} \rightarrow o_C \cup \{\abst\})\) of \(C\) which is a recomposed version of the actor function to determine the signal at reaction \(n \in \N\).
-    This transforms \cref{eq:1} into \cref{eq:2}, which is also called a fixed point.
+    This transforms \Cref{eq:1} into \Cref{eq:2}, which is also called a fixed point.
 
     \begin{IEEEeqnarray}{c} \label{eq:2}
         \forall n \in \N : s(n) = (f_C(n))(s(n))
@@ -243,7 +259,7 @@ Many simplified feedback compositions can shown to be \emph{well-formed} which i
 In this case, we can construct a resulting actor based on the fixed point \(s\).
 
 \begin{definition}[Well-formedness]
-    When finding a fixed point with \cref{eq:2}, there may be two problems.
+    When finding a fixed point with \Cref{eq:2}, there may be two problems.
     The fixed point may not exist, or it is not unique.
     In either case, the system is called \emph{ill-formed}---the feedback composition is unstable.
     If this is not the case, the system is called \emph{well-formed}.
@@ -263,9 +279,11 @@ Nevertheless, it is possible to find unique fixed points for many actors using a
     \end{enumerate}
 \end{algorithm}
 
-It is vitally important to remember \textbf{not} to search for a fixed point by matching all inputs and outputs for all transitions, as while this is a correct approach, for arbitrary state machine actors with big \(o_C\) this can take too much time, as this is an exhaustive search---which may be impossible if \(o_C\) has infinite types.
+It is vitally important to remember \textbf{not} to search for a fixed point by matching all inputs and outputs for all transitions.
+While this is a correct approach, for arbitrary state machine actors with big \(o_C\) this can take too much time.
+This is an exhaustive search---which may be impossible if \(o_C\) has infinite types.
 To demonstrate this, look at Figure 6.6 in LeeShia\footnote{\url{https://ptolemy.berkeley.edu/books/leeseshia/releases/LeeSeshia_DigitalV2_3.pdf\#figure.6.6}}.
-When applying \cref{alg:1} to this example, it does not find a fixed point in state \textsf{s1}, as \(1 \ne \abst\).
+When applying \Cref{alg:1} to this example, it does not find a fixed point in state \textsf{s1}, as \(1 \ne \abst\).
 There is the fixed point \(\abst\) though, which is derived from the transition from \textsf{s1} to \textsf{s2}, which can not be found using the algorithm---this model is well-formed but not constructive!
 
 \section{Dataflow Models}
