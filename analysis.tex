@@ -1,1 +1,69 @@
 \chapter{Analysis and Verification}
+In this chapter we will use the methodology developed in \Cref{ch:1} to evaluate model-based designs of embedded systems.
+For this, we first have to define what to evaluate for--what makes a model \emph{correct}.
+
+\section{Correctness and Model Checking}
+
+\begin{definition}[Correctness, Specification, Validation, and Verification]
+    We define a model to be \emph{correct} if it meets the right \emph{specifications} in its operating environment.
+
+    The specification of a model is a mathematical statement of the design objectives---the desired properties of the system.
+
+    To \emph{validate} a model is to prove if its specification meets the environments needs in the first place---\emph{you build the right thing}.
+
+    Finally, the \emph{verification} of a model is to check if the system has been build according to its specifications---\emph{you build the thing right}.
+\end{definition}
+
+As previously hinted, the goal of a model-based design approach is to not only synthesise software for embedded systems from a model, but also automatically verify it in doing so.
+The latter can be done with \emph{model checking}, a process which determines whether a system satisfies a formal specification.
+The specification is a \emph{temporal logic} formula, which expresses the desired systems properties over time.
+To define such formulas, we have to formally define \emph{execution traces} and \emph{propositional logic formulas}.
+
+\begin{definition}[Execution Traces and Propositional Logic]
+    An execution trace of an SM is a sequence of the form \(q_0, q_1, q_2, \dots\) with \(q_i = (x_i, s_i, y_i)\) with \(x_i\) being the input valuation, \(s_i\) the state, and \(y_i\) the output valuation at step \(i\).
+
+    A propositional logic formula is an extended version of the previously defined guards with \(s\) being another atomic statement, meaning that the SM is in state \(s\).
+    A more complicated formula is e.g., \(s_0 \wedge x = 1 \wedge \neg y\), meaning that \(s_0\) is the active state, the input \(x\) is present with value \(1\) and the output is not present during the reaction.
+
+    We define a propositional logic formula to \emph{hold} for a trace \(q_0, \dots\) iff it holds for \(q_0\).
+\end{definition}
+
+The reason in the last definition is, that we can define adequate propositional logic formulas to reason, that the SM must be correct starting from the first step of the trace.
+
+There are two main variants of temporal logic formulas we will go into, linear temporal logic (LTL), and real-time temporal logic.
+
+\newcommand*{\G}{\textbf{G}}
+\newcommand*{\F}{\textbf{F}}
+\newcommand*{\X}{\textbf{X}}
+\newcommand*{\U}{\textbf{U}}
+\subsection{Linear Temporal Logic}
+LTL formulas are an extension of propositional logic formulas with the following grammar.
+\begin{definition}[Linear Temporal Logic Formula]
+    An LTL formula extends propositions with four operators.
+    The simplest LTL formula is just a proposition \(p\).
+
+    For LTL formulas \(\phi, \phi_1, \phi_2\), we define the following LTL formulas for a trace \(q_0, q_1, \dots\).
+    \begin{IEEEeqnarray*}{l'l}
+        \G\phi & \text{\(\phi\) holds for every suffix of \(q_0, q_1, \dots\).} \\
+        \F\phi & \text{\(\phi\) holds for some suffix of \(q_0, q_1, \dots\).} \\
+        \X\phi & \text{\(\phi\) holds for \(q_1, \dots\).} \\
+        \phi_1\U\phi_2 & \text{\(\phi_1\) holds for all suffixes of \(q_0, q_1, \dots\) until a suffix for which \(\phi_2\) holds.}
+    \end{IEEEeqnarray*}
+\end{definition}
+
+Thus, \(\G\phi\) is equivalent to mean, that \(\phi\) holds for all steps of the trace, while \(\F\phi\) only needs one step to hold to fulfil the formula.
+\(\G\F\phi\) means, that \(\phi\) holds infinitely often.
+\(\F\G\phi\) means, that eventually \(\phi\) holds for every step.
+\(\G(\phi \Rightarrow \F \psi)\) means, that after \(\phi\) holds, \(\psi\) must hold eventually.
+\(\G(\phi \Rightarrow \X\X\psi)\) means, that after \(\phi\) holds, \(\psi\) holds exactly two reactions after.
+
+\begin{lemma}[Temporal Operators and Relationships]
+    For some trace and LTL formula \(\phi\), we have
+    \begin{IEEEeqnarray}{l}
+        \G\phi = \neg\F\neg\phi, \\
+        \F\phi = \texttt{true} \U \phi, \\
+        \text{\(X\) can not be expressed in terms of \(\G\), \(\F\) or \(\U\).}
+    \end{IEEEeqnarray}
+\end{lemma}
+
+Real-time temporal logic redefines the syntax of \(\F\) to uphold deadlines, e.g., \(\F_{\le 2.5 \text{ms}}\) means, that the following formula must hold within \(2.5\) ms of the trace.
