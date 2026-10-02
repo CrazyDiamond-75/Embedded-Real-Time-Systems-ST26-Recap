@@ -157,3 +157,67 @@ E.g., \(\Phi := \F \G \phi\), after some time a desired \(\phi\) is always met.
 
 Such a check can also be found by defining the \emph{system automaton} of \(\Phi\), constructing the synchronous \emph{Büchi automaton} composition of both SMs, and checking if there does not exists a reachable infinite cycle where the \(\phi\) state is reached.
 In this case, we can refute \(\Phi\).
+
+\section{Quantitative Analysis}
+Aside from checking correctness of the system, we also need to check if it computes solutions in finite time, and ideally, within a fixed time bound.
+Both are generally impossible, as the halting problem is undecidable.
+
+The goals here are how to determine the best case execution time (BCET) and worst case execution time (WCET).
+Under certain program complexity assumptions, we can approximate how to find WCETs.
+E.g., using program path/control flow analysis to find the longest paths in the program, or processor behaviour analysis.
+
+As not every control flow graph is a DAG, we also need to consider bounds on possible infinite loops.
+Consider if a loop may run infinite or has a finite bound.
+If there are none, artificially add bounds for variables to enforce a breaking condition in finite time.
+
+One important thing to note, is that WCETs are not composable, i.e., two tasks after each other may have a bigger total WCET due to the environment.
+Additionally, there can always be timing anomalies, e.g., random cache misses causing delays, or hardware related issues.
+
+There are different tools to come up with WCET estimations, e.g., Kiel Esterel Processor (KEP), which can be used in SCCharts.
+
+%% HERE %%
+
+\section{Achieving High Code Quality}
+When developing embedded real-time systems, maintaining a high code quality is essential to guarantee safety and reliability.
+Systems which are running 24/7 should especially avoid long term problems such as memory leaks or stack overflows.
+
+Developing code with high quality is done using different methods.
+
+\subsection{Testing}
+One method in increasing reliability is writing different tests for software.
+All tests should be automatic, thorough, repeatable, independent, and professional (A TRIP).
+Repeatably using tests to propose wanted behaviour and independently implementing the feature such that all tests pass is called test-driven development (TDD).
+
+A better approach is behaviour-driven development (BDD).
+The difference between the two is, that in BDD class behaviour should be expressed very naturally and descriptive in a test.
+In TDD the focus is mainly on specific (technical) methods.
+
+\subsubsection{Behaviour-Driven Development}
+BDD defines a workflow pipeline which goes from a top view into the concrete implementation steps.
+\begin{enumerate}
+    \item Business goals: State the main goals from a business-side of view.
+
+    \item Features: Consult domain expert, developers, and testers to come up with features which contribute to the business goals.
+
+    \item Examples: Illustrate features with multiple examples.
+
+    \item Executable specifications: Derive high-level specifications, e.g., general/class behaviour, from examples.
+
+    \item Low-level specifications: Derive low-level specifications, e.g., unit tests, from high-level specifications. \emph{Given, when, then}.
+
+    \item Application code: Start developing the code.
+
+    \item Testing: Automatically validate working features using specifications.
+\end{enumerate}
+
+There are different sorts of development tests which can be used to implement BDD.
+\begin{description}
+    \item[Unit tests] Assumptions, test call, and validations can be split into different submethods in a test.
+
+    \item[Mocking] Define mocker behaviour in all test submethods and use BDD-flavored variants, e.g., \emph{AssertJ} with \lstinline|BDDAssertions|.
+
+    \item[Automatic tests] Generate many possible cases inside one test.
+        If possible implement these tests syntactically as close to its high-level specifications as possible.
+        \emph{Cucumber} is a tool which helps in this step to automatically validate software based from its plain text specifications.
+        This works by generating automatic tests from a domain specific language implemented by the tester, which accepts the plain text specification.
+\end{description}
