@@ -175,7 +175,11 @@ Additionally, there can always be timing anomalies, e.g., random cache misses ca
 
 There are different tools to come up with WCET estimations, e.g., Kiel Esterel Processor (KEP), which can be used in SCCharts.
 
-%% HERE %%
+\subsection{Measuring Runtime}
+There are different practices on how to accurately measure the runtime during execution.
+One method is using a cycle counter which increments a register value on each operation.
+For 2 GHz processors, this method results in a wrap around time of 2.1 seconds for 32 bit registers and 292 years for 64 bit registers.
+It is possible to use a 64 bit counter with 32 bit registers using the Intel \emph{ReaD Time Stamp Counter} which works by using two registers to store the upper and lower 32 bits.
 
 \section{Achieving High Code Quality}
 When developing embedded real-time systems, maintaining a high code quality is essential to guarantee safety and reliability.
